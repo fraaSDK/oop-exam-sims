@@ -1,6 +1,9 @@
 # Compiled class file
 *.class
 
+# Lib folder
+[Ll]ib/
+
 # Log file
 *.log
 
