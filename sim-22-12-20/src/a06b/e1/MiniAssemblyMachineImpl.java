@@ -11,8 +11,7 @@ public class MiniAssemblyMachineImpl implements MiniAssemblyMachine {
     // Register id, amount to increase/decrease from given value.
     private Map<Integer, Integer> registersMap = new HashMap<>();
     private boolean returnStatus;
-    private boolean canJump;
-    private int operationsCount;
+    private boolean jump;
 
     @Override
     public void inc(int register) {
@@ -22,7 +21,6 @@ public class MiniAssemblyMachineImpl implements MiniAssemblyMachine {
         } else {
             registersMap.replace(register, registersMap.get(register) + 1);
         }
-        operationsCount++;
     }
 
     @Override
@@ -33,42 +31,47 @@ public class MiniAssemblyMachineImpl implements MiniAssemblyMachine {
         } else {
             registersMap.replace(register, registersMap.get(register) - 1);
         }
-        operationsCount++;
     }
 
     @Override
     public void jnz(int register, int target) {
         checkReturn();
         // TODO
-        if (register != 0) {
-            canJump = true;
-        }
-        operationsCount++;
+        jump = true;
     }
 
     @Override
     public void ret() {
         returnStatus = true;
-        operationsCount++;
     }
 
     @Override
     public List<Integer> execute(List<Integer> registers) {
         var result = new ArrayList<Integer>();
         for (var value : registers) {
-            var index = registers.indexOf(value);
-            var delta = getAmount(index);
+            var currentValue = value;
+            var register = registers.indexOf(value);
+            var delta = getAmount(register);
 
             // If present we compute the result
             if (delta.isPresent()) {
-                result.add(value + delta.get());
+                result.add(currentValue + delta.get());
             } else {
                 // Result is unchanged.
-                result.add(value);
+                result.add(currentValue);
             }
+
+            // FIXME BROKEN.
+            // while (jump) {
+            //     currentValue += delta.get();
+            //     result.set(register, currentValue);
+            //     if (currentValue == 0) {
+            //         break;
+            //     }
+            // }
+            // jump = false;
         }
         registersMap.clear();
-        operationsCount = 0;
         return result;
     }
 
