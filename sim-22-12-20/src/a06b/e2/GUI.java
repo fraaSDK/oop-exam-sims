@@ -8,7 +8,8 @@ import java.awt.event.ActionListener;
 
 public class GUI extends JFrame {
     
-    private List<JButton> list = new ArrayList<>();
+    private Logic logic = new LogicImpl();
+    private List<JButton> buttonList = new ArrayList<>();
 
     public GUI(int size) {
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -17,19 +18,25 @@ public class GUI extends JFrame {
         this.getContentPane().add(BorderLayout.CENTER, panel);
 
         ActionListener al = (e) -> {
-            System.out.println("Pressed.");
+            var index = logic.getNextMove().get();
+            var currentBtn = buttonList.get(index);
+            currentBtn.setText("*");
         };
 
         final JButton btn = new JButton(">");
         this.getContentPane().add(BorderLayout.SOUTH, btn);
         btn.addActionListener(al);
         
+        var index = 0;
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                final JButton jb = new JButton();
+                buttonList.add(jb);
+                panel.add(jb);
+                logic.addToGrid(index++, i , j);
+            }
+        }
 
-        for (int i = 0; i < size * size; i++){
-            final JButton jb = new JButton();
-            list.add(jb);
-            panel.add(jb);
-        } 
         this.setVisible(true);
     }
 
