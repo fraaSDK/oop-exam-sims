@@ -1,11 +1,16 @@
 package a06b.e2;
 
+import java.util.Optional;
+
 public interface Logic {
     
-    boolean isValidMove(int x, int y);
+    /**
+     * @return the index of the button in the button list.
+     */
+    Optional<Integer> getNextMove();
 
     boolean isOver();
 
-    void addToGrid(int x, int y, boolean selected);
+    void addToGrid(int index, int x, int y);
     
 }
