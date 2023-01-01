@@ -21,6 +21,10 @@ public class GUI extends JFrame {
             var index = logic.getNextMove().get();
             var currentBtn = buttonList.get(index);
             currentBtn.setText("*");
+
+            if (logic.isOver()) {
+                System.exit(0);
+            }
         };
 
         final JButton btn = new JButton(">");
