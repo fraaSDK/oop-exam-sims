@@ -2,8 +2,6 @@ package a06b.e1;
 
 import static org.junit.Assert.*;
 
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 public class Test {
