@@ -4,6 +4,9 @@
 # Lib folder
 [Ll]ib/
 
+# Solutions folder
+sol*/
+
 # Log file
 *.log
 
