@@ -21,11 +21,11 @@ public class GUI extends JFrame {
         ActionListener al = e -> {
         	var btn = (JButton)e.getSource();
         	btn.setText("1");
-        	btn.setEnabled(false);
 
             logic.registerMove(btn.getX() / btn.getWidth(), btn.getY() / btn.getHeight());
 
             var buttons = logic.computeRectangle();
+
             // TODO fix wrong coordinates.
             buttons.forEach(b -> {
                 cells.get(b).setText("*");
@@ -39,10 +39,10 @@ public class GUI extends JFrame {
         for (int i=0; i<size; i++){
             for (int j=0; j<size; j++){
                 final JButton jb = new JButton(" ");
-                this.cells.put(new Pair<>(j, i), jb);
+                this.cells.put(new Pair<>(i, j), jb);
                 jb.addActionListener(al);
                 panel.add(jb);
-                logic.addToGameBoard(i, j, false);
+                // logic.addToGameBoard(i, j, false);
             }
         }
         this.setVisible(true);

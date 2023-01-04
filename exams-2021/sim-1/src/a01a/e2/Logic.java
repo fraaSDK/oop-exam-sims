@@ -41,6 +41,7 @@ public interface Logic {
      * @param y the move y coordinate.
      * @param played the move status (played/unplayed).
      */
+    @Deprecated
     void addToGameBoard(int x, int y, boolean played);
 
 }
