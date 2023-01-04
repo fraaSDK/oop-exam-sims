@@ -33,15 +33,4 @@ public interface Logic {
      */
     boolean isOver();
 
-    /**
-     * Adds to the game board all the possible
-     * playable moves.
-     * 
-     * @param x the move x coordinate.
-     * @param y the move y coordinate.
-     * @param played the move status (played/unplayed).
-     */
-    @Deprecated
-    void addToGameBoard(int x, int y, boolean played);
-
 }
