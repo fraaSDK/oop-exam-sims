@@ -1,11 +1,12 @@
 package a01b.e1;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * Summary:
@@ -36,66 +37,50 @@ public class EventSequenceProducerHelpersImpl implements EventSequenceProducerHe
 
     @Override
     public <E> List<E> window(EventSequenceProducer<E> sequence, double fromTime, double toTime) {
-        List<E> list = new ArrayList<>();
-        
-        var value = sequence.getNext();
-        var start = Math.round(fromTime);
-        var end = Math.round(toTime);
-
-        while (Long.compare(Math.round(value.get1()), start) != 0) {
-            try {
-                value = sequence.getNext();
-            } catch (Exception e) {
-                // TODO: handle exception
-            }
-        }
-        list.add(value.get2());
-
-        return list;
+        return toStream(sequence)
+                .dropWhile(e -> e.get1() < fromTime)
+                .takeWhile(e -> e.get1() < toTime)
+                .map(Pair::get2)
+                .toList();
     }
 
     @Override
     public <E> Iterable<E> asEventContentIterable(EventSequenceProducer<E> sequence) {
-        return () -> {
-            return new Iterator<E>() {
-
-                @Override
-                public boolean hasNext() {
-                    // TODO
-                    return false;
-                }
-
-                @Override
-                public E next() {
-                    return sequence.getNext().get2();
-                }
-                
-            };
-        };
+        return () -> toStream(sequence).map(Pair::get2).iterator();
     }
 
     @Override
     public <E> Optional<Pair<Double, E>> nextAt(EventSequenceProducer<E> sequence, double time) {
-        var value = sequence.getNext();
-        while (Long.compare(Math.round(value.get1()), Math.round(time)) != 0) {
-            try {
-                value = sequence.getNext();
-            } catch (NoSuchElementException e) {
-                return Optional.empty();
-            }
-        }
-
-        return Optional.of(value);
+        return toStream(sequence)
+                .dropWhile(e -> e.get1() < time)
+                .findFirst();
     }
 
     @Override
     public <E> EventSequenceProducer<E> filter(EventSequenceProducer<E> sequence, Predicate<E> predicate) {
-        // TODO
-        if (predicate.test(sequence.getNext().get2())) {
-            return sequence;
-        }
+        return fromIterator(
+            toStream(sequence).filter(e -> predicate.test(e.get2())).iterator()
+        );
+    }
 
-        return null;
+    // Creates a stream from the event producer.
+    private <E> Stream<Pair<Double, E>> toStream(EventSequenceProducer<E> producer) {
+        Supplier<Optional<Pair<Double, E>>> supplier = new Supplier<Optional<Pair<Double,E>>>() {
+
+            @Override
+            public Optional<Pair<Double, E>> get() {
+                try {
+                    return Optional.of(producer.getNext());
+                } catch (Exception e) {
+                    return Optional.empty();
+                }
+            }
+            
+        };
+
+        return Stream.generate(supplier)
+                .takeWhile(Optional::isPresent)
+                .map(Optional::get);
     }
 
 }
