@@ -21,11 +21,12 @@ public class LogicImpl implements Logic {
             case 0:
                 return true;
             case 1:
-                return moves.get(0).getX() == move.getX() || moves.get(0).getY() == move.getY();
+                return (moves.get(0).getX() == move.getX() || moves.get(0).getY() == move.getY()) &&
+                    !isPlayed(move);
             case 2:
-                return moves.get(0).getX() == moves.get(1).getX()
+                return !isPlayed(move) && (moves.get(0).getX() == moves.get(1).getX()
                     ? moves.get(0).getY() == move.getY()
-                    : moves.get(0).getX() == move.getX();
+                    : moves.get(0).getX() == move.getX());
             default:
                 throw new IllegalStateException();
         }
@@ -67,6 +68,10 @@ public class LogicImpl implements Logic {
             }
         }
         return result;
+    }
+
+    private boolean isPlayed(Pair<Integer, Integer> move) {
+        return moves.contains(move);
     }
 
 }
