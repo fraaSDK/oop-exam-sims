@@ -1,15 +1,17 @@
 package a01b.e2;
 
-import java.util.List;
+import java.util.Set;
 
 public interface Logic {
 
-    void newMove(int x, int y);
+    void registerMove(Pair<Integer, Integer> move);
+
+    boolean isValid(Pair<Integer, Integer> move);
+
+    int getMoveNumber();
     
-    List<Pair<Integer, Integer>> drawOnBoard();
+    Set<Pair<Integer, Integer>> drawOnBoard();
 
     boolean isOver();
     
-    void addToBoard(int x, int y, boolean played);
-
 }
