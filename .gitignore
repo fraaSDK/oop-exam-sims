@@ -10,6 +10,9 @@ sol*/
 # Log file
 *.log
 
+# Misc files
+*.txt
+
 # BlueJ files
 *.ctxt
 
