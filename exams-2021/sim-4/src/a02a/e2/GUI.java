@@ -22,7 +22,9 @@ public class GUI extends JFrame {
         ActionListener al = e -> {
             var move = logic.makeMove();
             System.out.println(move);
-            cells.get(move.getY()).setText(move.getX().toString());
+            if (move.isPresent()) {
+                cells.get(move.get().getY()).setText(move.get().getX().toString());
+            }
         	if (logic.isOver()) {
                 System.exit(0);
             }

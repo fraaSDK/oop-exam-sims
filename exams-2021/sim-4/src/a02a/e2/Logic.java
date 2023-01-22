@@ -1,8 +1,10 @@
 package a02a.e2;
 
+import java.util.Optional;
+
 public interface Logic {
     
-    Pair<Integer, Pair<Integer,Integer>> makeMove();
+    Optional<Pair<Integer, Pair<Integer,Integer>>> makeMove();
 
     boolean isOver();
 

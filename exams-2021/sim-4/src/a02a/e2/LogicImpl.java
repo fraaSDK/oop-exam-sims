@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 public class LogicImpl implements Logic {
@@ -36,23 +37,28 @@ public class LogicImpl implements Logic {
                 case WEST:
                     return new Pair<>(-1, 0);
                 default:
-                    throw new IllegalStateException("Unsupported direction");
+                    throw new IllegalStateException("Unsupported direction.");
             }
         }
     }
 
     @Override
-    public Pair<Integer, Pair<Integer, Integer>> makeMove() {
+    public Optional<Pair<Integer, Pair<Integer, Integer>>> makeMove() {
+        // First move, not random.
         if (counter == 0) {
             previousMove = new Pair<>(rand.nextInt(size), rand.nextInt(size));
             nextDirection = Direction.NORTH;
             visited.add(previousMove);
-            return new Pair<>(counter++, previousMove);
+            return Optional.of(new Pair<>(counter++, previousMove));
         }
 
-        previousMove = computeCoordinates(nextDirection);
+        var newMove = computeCoordinates(nextDirection);
+        if (newMove.isEmpty()) {
+            return Optional.empty();
+        }
+        previousMove = newMove.get();
         visited.add(previousMove);
-        return new Pair<>(counter++, previousMove);
+        return Optional.of(new Pair<>(counter++, previousMove));
     }
 
     @Override
@@ -60,26 +66,28 @@ public class LogicImpl implements Logic {
         return gameOver;
     }
 
-    private Pair<Integer, Integer> computeCoordinates(Direction direction) {
+    // This method returns an Optional of the next move, empty if there are no valid moves.
+    private Optional<Pair<Integer, Integer>> computeCoordinates(Direction direction) {
         Pair<Integer, Integer> nextMove;
         Pair<Integer, Integer> delta;
         Map<Direction, Boolean> tries = new HashMap<>();
         do {
-            if (tries.size() == 4 && tries.entrySet().stream().allMatch(e -> e.getValue() == true)) {
+            // Checking for game over condition to avoid infinite loops.
+            if (tries.size() == 4 && tries.entrySet().stream().allMatch(Map.Entry::getValue)) {
                 gameOver = true;
+                return Optional.empty();
             }
             delta = Direction.get(direction);
             nextMove = new Pair<>(previousMove.getX() + delta.getX(), previousMove.getY() + delta.getY());
             tries.putIfAbsent(direction, true);
             direction = getRandomDirection();
-
-            // System.out.println(tries);
         } while (!isValid(nextMove) && !gameOver);
 
+        // Updating the next direction with the last valid one.
         nextDirection = direction;
         tries.clear();
 
-        return nextMove;
+        return Optional.of(nextMove);
     }
 
     private Direction getRandomDirection() {
