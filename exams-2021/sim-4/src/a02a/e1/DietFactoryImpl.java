@@ -1,44 +1,19 @@
 package a02a.e1;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Set;
+import java.util.function.Predicate;
 
 public class DietFactoryImpl implements DietFactory {
 
     @Override
     public Diet standard() {
-        return new Diet() {
-
-            private static final int MIN_CALORIES = 1500;
-            private static final int MAX_CALORIES = 2000;
-            private Map<String, Map<Nutrient, Integer>> foods = new HashMap<>();
+        return new AbstractDiet() {
 
             @Override
-            public void addFood(String name, Map<Nutrient, Integer> nutritionMap) {
-                foods.put(name, nutritionMap);
-            }
-
-            @Override
-            public boolean isValid(Map<String, Double> dietMap) {
-                var filteredFoods = foods.entrySet().stream()
-                        .filter(e -> dietMap.containsKey(e.getKey()))
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-                Map<String, Double> dietCopy = new HashMap<>(dietMap);
-                dietCopy.replaceAll((k, v) -> v / 100.0);
-
-                double totalCalories = 0;
-                for (var f1 : dietCopy.entrySet()) {
-                    for (var f2 : filteredFoods.entrySet()) {
-                        if (f1.getKey().equals(f2.getKey())) {
-                            var calories = f2.getValue().values().stream().reduce(0, Integer::sum);
-                            totalCalories += calories * f1.getValue();
-                        }
-                    }
-                }
-
-                return totalCalories >= MIN_CALORIES && totalCalories <= MAX_CALORIES;
+            protected Set<Pair<Predicate<Nutrient>, Predicate<Double>>> addLimitations() {
+                return Set.<Pair<Predicate<Nutrient>, Predicate<Double>>>of(
+                        new Pair<>(n -> true, c -> c >= 1500 && c <= 2000)
+                );
             }
             
         };
@@ -46,20 +21,51 @@ public class DietFactoryImpl implements DietFactory {
 
     @Override
     public Diet lowCarb() {
-        // TODO
-        return null;
+        return new AbstractDiet() {
+
+            @Override
+            protected Set<Pair<Predicate<Nutrient>, Predicate<Double>>> addLimitations() {
+                return Set.<Pair<Predicate<Nutrient>, Predicate<Double>>>of(
+                        new Pair<>(n -> true, c -> c >= 1000 && c <= 1500),
+                        new Pair<>(n -> n == Nutrient.CARBS, c -> c <= 300)
+                );
+            }
+            
+        };
     }
 
     @Override
     public Diet highProtein() {
-        // TODO
-        return null;
+        return new AbstractDiet() {
+
+            @Override
+            protected Set<Pair<Predicate<Nutrient>, Predicate<Double>>> addLimitations() {
+                return Set.<Pair<Predicate<Nutrient>, Predicate<Double>>>of(
+                        new Pair<>(n -> true, c -> c >= 2000 && c <= 2500),
+                        new Pair<>(n -> n == Nutrient.CARBS, c -> c <= 300),
+                        new Pair<>(n -> n == Nutrient.PROTEINS, c -> c >= 1300)
+                );
+            }
+            
+        };
     }
 
     @Override
     public Diet balanced() {
-        // TODO
-        return null;
+        return new AbstractDiet() {
+
+            @Override
+            protected Set<Pair<Predicate<Nutrient>, Predicate<Double>>> addLimitations() {
+                return Set.<Pair<Predicate<Nutrient>, Predicate<Double>>>of(
+                        new Pair<>(n -> true, c -> c >= 1600 && c <= 2000),
+                        new Pair<>(n -> n == Nutrient.CARBS, c -> c >= 600),
+                        new Pair<>(n -> n == Nutrient.PROTEINS, c -> c >= 600),
+                        new Pair<>(n -> n == Nutrient.FAT, c -> c >= 400),
+                        new Pair<>(n -> n == Nutrient.FAT && n == Nutrient.PROTEINS, c -> c <= 1100)
+                );
+            }
+            
+        };
     }
     
 }
