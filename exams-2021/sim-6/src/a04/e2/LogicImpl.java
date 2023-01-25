@@ -1,30 +1,22 @@
 package a04.e2;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Queue;
 import java.util.Random;
-import java.util.function.IntBinaryOperator;
 
 public class LogicImpl implements Logic {
     
     private int size;
-    private List<Integer> numbers = new ArrayList<>();
-    private List<String> operators = new ArrayList<>();
+    private Optional<Pair<Integer, Integer>> previousMove = Optional.empty();
+    private Queue<Integer> numbersQueue = new LinkedList<>();
+    private Queue<String> operatorsQueue = new LinkedList<>();
+    private Optional<Integer> tempResult = Optional.empty();
     private Move currentMoveType = Move.NUMBER;
-    private List<Integer> pending = new ArrayList<>(2);
-    private int tempResult;
     
-    private static enum Move {
-        NUMBER, OPERATOR
-    }
-
-    private static enum Operator {
-        PLUS((a, b) -> a + b), MINUS((a, b) -> a - b), TIMES((a, b) -> a * b);
-        Operator(IntBinaryOperator operator) { }
-    }
-
     public LogicImpl(int size) {
         this.size = size;
     }
@@ -48,21 +40,23 @@ public class LogicImpl implements Logic {
         return result;
     }
 
-    // TODO: add adjacency checks.
     @Override
     public boolean registerAction(Pair<Integer, Integer> action, String content) {
-        if (isValid(content)) {
+        if (isValid(content) && isAdjacent(action)) {
             addMove(content, currentMoveType);
             nextMoveType();
-            if (hasPendingOperation()) {
-                int j = 0;
-                for (int i = 0; i < numbers.size(); i += 2) {
-                    var n1 = numbers.get(i);
-                    var n2 = numbers.get(i + 1);
-                    // TODO: instead of getting operators with operation() method, use enum.
-                    tempResult += operation(n1, n2, operators.get(j++));
+            if (!numbersQueue.isEmpty()) {
+                if (tempResult.isEmpty() && numbersQueue.size() == 2) {
+                    var n1 = numbersQueue.poll();
+                    var n2 = numbersQueue.poll();
+                    tempResult = Optional.of(operation(n1, n2, operatorsQueue.poll()));
+                } 
+                if (tempResult.isPresent() && numbersQueue.size() == 1) {
+                    var n = numbersQueue.poll();
+                    tempResult = Optional.of(operation(tempResult.get(), n, operatorsQueue.poll()));
                 }
             }
+            previousMove = Optional.of(action);
             return true;
         }
         return false;
@@ -70,8 +64,13 @@ public class LogicImpl implements Logic {
 
     @Override
     public int computeResult() {
-        // TODO
-        return tempResult;
+        return tempResult.get();
+    }
+
+    private boolean isAdjacent(Pair<Integer, Integer> move) {
+        return previousMove.isEmpty() ||
+                Math.abs(previousMove.get().getX() - move.getX()) +
+                Math.abs(previousMove.get().getY() - move.getY()) == 1;
     }
 
     private boolean isValid(String name) {
@@ -93,10 +92,9 @@ public class LogicImpl implements Logic {
 
     private boolean addMove(String content, Move type) {
         if (type.equals(Move.NUMBER)) {
-            pending.add(Integer.parseInt(content));
-            return numbers.add(Integer.parseInt(content));
+            return numbersQueue.add(Integer.parseInt(content));
         } else {
-            return operators.add(content);
+            return operatorsQueue.add(content);
         }
     }
 
@@ -109,12 +107,8 @@ public class LogicImpl implements Logic {
             case "*":
                 return Math.multiplyExact(a, b);
             default:
-                throw new IllegalStateException();
+                throw new IllegalStateException("Unsupported operation.");
         }
-    }
-
-    private boolean hasPendingOperation() {
-        return pending.size() == 2;
     }
 
 }

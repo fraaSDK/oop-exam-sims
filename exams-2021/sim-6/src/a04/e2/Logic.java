@@ -10,4 +10,8 @@ public interface Logic {
     
     int computeResult();
 
+    enum Move {
+        NUMBER, OPERATOR
+    }
+
 }
