@@ -1,7 +1,9 @@
 package a02b.e1;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import a02b.e1.UniversityProgram.Sector;
 
@@ -36,6 +38,32 @@ public class UniversityProgramFactoryImpl implements UniversityProgramFactory {
             return credits;
         }
 
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, sector, credits);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            Course other = (Course) obj;
+            return Objects.equals(name, other.name) &&
+                    Objects.equals(sector, other.sector) &&
+                    Objects.equals(credits, other.credits);
+        }
+
+    }
+
+    private int calculateCredits(Set<Course> courses, Set<String> courseNames, Predicate<Sector> sector) {
+        return courses.stream()
+                .filter(c -> courseNames.contains(c.getName()) && sector.test(c.getSector()))
+                .mapToInt(c -> c.getCredits())
+                .sum();
     }
 
     @Override
@@ -51,11 +79,7 @@ public class UniversityProgramFactoryImpl implements UniversityProgramFactory {
 
             @Override
             public boolean isValid(Set<String> courseNames) {
-                var credits = courses.stream()
-                        .filter(c -> courseNames.contains(c.getName()))
-                        .mapToInt(c -> c.getCredits())
-                        .sum();
-                System.out.println(credits);
+                var credits = calculateCredits(courses, courseNames, s -> true);
                 return credits == 60;
             }
             
@@ -75,18 +99,9 @@ public class UniversityProgramFactoryImpl implements UniversityProgramFactory {
 
             @Override
             public boolean isValid(Set<String> courseNames) {
-                var creditsMath = courses.stream()
-                        .filter(c -> courseNames.contains(c.getName()) && c.getSector().equals(Sector.MATHEMATICS))
-                        .mapToInt(c -> c.getCredits())
-                        .sum();
-                var creditsCS = courses.stream()
-                        .filter(c -> courseNames.contains(c.getName()) && c.getSector().equals(Sector.COMPUTER_SCIENCE))
-                        .mapToInt(c -> c.getCredits())
-                        .sum();
-                var creditsPhysics = courses.stream()
-                        .filter(c -> courseNames.contains(c.getName()) && c.getSector().equals(Sector.PHYSICS))
-                        .mapToInt(c -> c.getCredits())
-                        .sum();
+                var creditsMath = calculateCredits(courses, courseNames, s -> s.equals(Sector.MATHEMATICS));
+                var creditsCS = calculateCredits(courses, courseNames, s -> s.equals(Sector.COMPUTER_SCIENCE));
+                var creditsPhysics = calculateCredits(courses, courseNames, s -> s.equals(Sector.PHYSICS));
                 return creditsMath >= 12 && creditsCS >= 12 && creditsPhysics >= 12;
             }
 
@@ -106,18 +121,9 @@ public class UniversityProgramFactoryImpl implements UniversityProgramFactory {
 
             @Override
             public boolean isValid(Set<String> courseNames) {
-                var credits = courses.stream()
-                        .filter(c -> courseNames.contains(c.getName()))
-                        .mapToInt(c -> c.getCredits())
-                        .sum();
-                var creditsCS = courses.stream()
-                        .filter(c -> courseNames.contains(c.getName()) && c.getSector().equals(Sector.COMPUTER_SCIENCE))
-                        .mapToInt(c -> c.getCredits())
-                        .sum();
-                var creditsCE = courses.stream()
-                        .filter(c -> courseNames.contains(c.getName()) && c.getSector().equals(Sector.COMPUTER_ENGINEERING))
-                        .mapToInt(c -> c.getCredits())
-                        .sum();
+                var credits = calculateCredits(courses, courseNames, s -> true);
+                var creditsCS = calculateCredits(courses, courseNames, s -> s.equals(Sector.COMPUTER_SCIENCE));
+                var creditsCE = calculateCredits(courses, courseNames, s -> s.equals(Sector.COMPUTER_ENGINEERING));
                 return credits >= 48 && creditsCS + creditsCE >= 30;
             }
 
@@ -137,30 +143,12 @@ public class UniversityProgramFactoryImpl implements UniversityProgramFactory {
 
             @Override
             public boolean isValid(Set<String> courseNames) {
-                var credits = courses.stream()
-                        .filter(c -> courseNames.contains(c.getName()))
-                        .mapToInt(c -> c.getCredits())
-                        .sum();
-                var creditsCS = courses.stream()
-                        .filter(c -> courseNames.contains(c.getName()) && c.getSector().equals(Sector.COMPUTER_SCIENCE))
-                        .mapToInt(c -> c.getCredits())
-                        .sum();
-                var creditsCE = courses.stream()
-                        .filter(c -> courseNames.contains(c.getName()) && c.getSector().equals(Sector.COMPUTER_ENGINEERING))
-                        .mapToInt(c -> c.getCredits())
-                        .sum();
-                var creditsMath = courses.stream()
-                        .filter(c -> courseNames.contains(c.getName()) && c.getSector().equals(Sector.MATHEMATICS))
-                        .mapToInt(c -> c.getCredits())
-                        .sum();
-                var creditsPhysics = courses.stream()
-                        .filter(c -> courseNames.contains(c.getName()) && c.getSector().equals(Sector.PHYSICS))
-                        .mapToInt(c -> c.getCredits())
-                        .sum();
-                var creditsThesis = courses.stream()
-                        .filter(c -> courseNames.contains(c.getName()) && c.getSector().equals(Sector.THESIS))
-                        .mapToInt(c -> c.getCredits())
-                        .sum();
+                var credits = calculateCredits(courses, courseNames, s -> true);
+                var creditsCS = calculateCredits(courses, courseNames, s -> s.equals(Sector.COMPUTER_SCIENCE));
+                var creditsCE = calculateCredits(courses, courseNames, s -> s.equals(Sector.COMPUTER_ENGINEERING));
+                var creditsMath = calculateCredits(courses, courseNames, s -> s.equals(Sector.MATHEMATICS));
+                var creditsPhysics = calculateCredits(courses, courseNames, s -> s.equals(Sector.PHYSICS));
+                var creditsThesis = calculateCredits(courses, courseNames, s -> s.equals(Sector.THESIS));
                 return credits == 120 && creditsCS + creditsCE >= 60 && creditsMath + creditsPhysics <= 18 && creditsThesis == 24;
             }
 
